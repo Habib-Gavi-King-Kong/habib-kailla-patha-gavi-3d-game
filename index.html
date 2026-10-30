@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Habib Gavi King Kong 3D</title>
+
+<style>
+:root{
+ --bg:#080d15;--blue:#172536;--blue2:#243950;
+ --gold:#ffd36a;--panel:rgba(13,19,29,.96);
+ --line:rgba(255,255,255,.15);
+}
+*{box-sizing:border-box}
+html,body,#game{
+ margin:0;width:100%;height:100%;overflow:hidden;
+ background:#10151f;color:white;font-family:Arial,sans-serif;
+ touch-action:none
+}
+button,select{font-family:inherit}
+button{cursor:pointer;touch-action:manipulation}
+#game{position:fixed;inset:0}
+canvas{display:block}
+
+/* HOME */
+#home{
+ position:fixed;inset:0;z-index:10;overflow-y:auto;
+ background:radial-gradient(ellipse at 50% 15%,#263e59,transparent 60%),
+ linear-gradient(145deg,#101a28,#070b11 80%)
+}
+.topbar{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:8px;padding:13px;background:#080d15e8;
+ border-bottom:1px solid var(--line)
+}
+.brand{font-weight:900;font-size:14px;color:var(--gold)}
+.devButton,.menuButton{
+ background:#202d3d;border:1px solid #526276;color:white;
+ border-radius:10px;padding:10px;font-size:11px;font-weight:bold
+}
+.hero{
+ min-height:280px;padding:27px 17px 22px;
+ display:flex;flex-direction:column;justify-content:center;
+ background:radial-gradient(ellipse at center,#344a62,transparent 75%)
+}
+.tag{font-size:11px;letter-spacing:3px;color:var(--gold)}
+.hero h1{
+ font-size:clamp(30px,8vw,46px);line-height:1.05;
+ margin:13px 0;text-shadow:0 5px 18px #000
+}
+.hero p{color:#bdc8d5;font-size:13px;line-height:1.8}
+.primary{
+ width:100%;padding:16px;border:0;border-radius:12px;
+ background:linear-gradient(100deg,#ffe29a,#d99b36);
+ color:#141414;font-weight:900;font-size:16px;
+ box-shadow:0 5px 0 #754b16
+}
+.primary:active{transform:translateY(2px)}
+.section{padding:12px 14px}
+.sectionTitle{
+ font-size:12px;color:var(--gold);letter-spacing:1.5px;
+ margin:3px 0 10px
+}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.tile{
+ padding:12px;background:linear-gradient(145deg,#202c3c,#121a25);
+ border:1px solid var(--line);border-radius:12px;min-width:0
+}
+.tile b{display:block;font-size:12px;margin-bottom:8px}
+.tile small{font-size:10px;color:#aeb9c8;line-height:1.5}
+.select{
+ width:100%;padding:11px 7px;border-radius:8px;color:white;
+ background:#0c121b;border:1px solid #435269;margin-top:5px;
+ font-size:12px
+}
+.story{
+ background:#101722;border:1px solid var(--line);
+ padding:13px;border-radius:12px;font-size:12px;
+ line-height:1.9;color:#d0d8e3
+}
+.story strong{color:var(--gold)}
+.footer{text-align:center;color:#748093;font-size:10px;padding:18px}
+
+/* DEVELOPER */
+.modal{
+ position:fixed;inset:0;z-index:30;display:none;
+ align-items:center;justify-content:center;padding:20px;background:#000b
+}
+.modalCard{
+ width:100%;max-width:360px;padding:20px;
+ background:#151f2d;border:1px solid #65748b;
+ border-radius:17px;box-shadow:0 20px 70px #000
+}
+.modalCard h2{color:var(--gold);font-size:18px}
+.devLine{
+ border-bottom:1px solid var(--line);padding:12px 0;
+ font-size:12px;line-height:1.7
+}
+.closeBtn{
+ width:100%;padding:12px;margin-top:15px;border:0;
+ border-radius:9px;background:#34465c;color:white
+}
+
+/* GAME HUD */
+#hud{
+ display:none;position:fixed;top:7px;left:7px;right:7px;
+ z-index:3;justify-content:space-between;gap:5px;
+ pointer-events:none
+}
+.panel{
+ min-width:0;width:31%;padding:8px;background:var(--panel);
+ border:1px solid var(--line);border-radius:10px;font-size:10px
+}
+.bar{height:6px;background:#4b5058;border-radius:5px;overflow:hidden;margin:5px 0}
+.fill{height:100%;width:100%;background:#65e89a;transition:width .15s}
+#enemyFill{background:#ff514b}
+#hudCenter{text-align:center;width:34%}
+#message{
+ position:fixed;top:27%;left:0;right:0;z-index:4;
+ text-align:center;font-size:20px;font-weight:900;
+ text-shadow:0 3px 9px #000;pointer-events:none;padding:0 12px
+}
+#gameButtons{
+ display:none;position:fixed;top:83px;left:8px;right:8px;
+ z-index:4;justify-content:space-between;gap:6px;pointer-events:none
+}
+.mini{
+ pointer-events:auto;background:#111a27ed;color:white;
+ border:1px solid #ffffff38;border-radius:8px;
+ padding:10px;font-size:10px;font-weight:bold
+}
+#controls{
+ display:none;position:fixed;bottom:10px;left:0;right:0;
+ padding:0 9px;z-index:4;justify-content:space-between;
+ align-items:flex-end;gap:8px
+}
+.group{display:grid;gap:6px}
+.move,.fight{grid-template-columns:repeat(2,minmax(52px,70px))}
+.ctrl{
+ height:46px;border:1px solid #ffffff3c;border-radius:11px;
+ background:#111a27ed;color:white;font-size:10px;
+ font-weight:bold;box-shadow:0 3px 0 #0008
+}
+.ctrl:active{background:#f1cb72;color:#151515}
+#exitGame{
+ display:none;position:fixed;bottom:160px;right:9px;z-index:5;
+ background:#a93636;border:1px solid #ffaaaa;color:white;
+ padding:10px;border-radius:9px;font-size:10px
+}
+
+/* GAME OVER */
+#gameOverPanel{
+ display:none;position:fixed;inset:0;z-index:50;
+ align-items:center;justify-content:center;
+ padding:20px;background:#000d;overflow-y:auto
+}
+.gameOverCard{
+ width:100%;max-width:390px;padding:22px 18px;
+ background:linear-gradient(145deg,#202d40,#101722);
+ border:2px solid var(--gold);border-radius:19px;
+ text-align:center;box-shadow:0 15px 50px #000
+}
+.gameOverCard h1{color:#ff6969;font-size:29px;margin:6px 0 13px}
+.gameOverText{
+ color:#f1d69a;font-size:14px;line-height:1.9;
+ margin:12px 0 19px;overflow-wrap:anywhere
+}
+.actionButton{
+ width:100%;padding:14px;border:0;border-radius:10px;
+ font-size:14px;font-weight:900;margin-top:9px
+}
+#retryGame{background:linear-gradient(100deg,#ffe29a,#d99b36);color:#151515}
+#gameOverMenu{background:#34465c;color:white;border:1px solid #526276}
+
+@media(min-width:700px){
+ .hero{padding-left:8%;min-height:330px}
+ .section{padding-left:8%;padding-right:8%}
+ .move,.fight{grid-template-columns:repeat(2,80px)}
+ .ctrl{height:55px}
+}
+</style>
+</head>
+
+<body>
+<div id="game"></div>
+
+<div id="home">
+ <div class="topbar">
+  <div class="brand">HABIB GAVI 3D</div>
+  <button class="devButton" id="openDev">👨‍💻 DEVELOPER INFO</button>
+ </div>
+
+ <div class="hero">
+  <div class="tag">3D FIGHTING EXPERIENCE</div>
+  <h1>HABIB<br>GAVI KING KONG</h1>
+  <p>
+   ফাইটিং এরিনায় প্রবেশ করো। নিজের কৌশল কাজে লাগাও,
+   প্রতিপক্ষকে পরাজিত করো এবং প্রতিটি নতুন রাউন্ডে
+   আরও শক্তিশালী চ্যালেঞ্জের মুখোমুখি হও।
+  </p>
+  <button class="primary" id="enterArena">⚔ ENTER ARENA</button>
+ </div>
+
+ <div class="section">
+  <div class="sectionTitle">CHARACTER SELECT</div>
+  <div class="grid2">
+   <div class="tile">
+    <b>🥊 YOUR FIGHTER</b>
+    <small>পছন্দের চরিত্র বেছে নাও</small>
+    <select class="select" id="characterSelect">
+     <option value="0">KING KONG</option>
+     <option value="1">MAIGGA</option>
+     <option value="2">GAVI</option>
+     <option value="3">লেদা শুটকি শামসুর ভাই</option>
+     <option value="4">টিকটক আখি আপা</option>
+    </select>
+   </div>
+   <div class="tile">
+    <b>🏟 ARENA SELECT</b>
+    <small>নিজের ফাইটিং পরিবেশ বেছে নাও</small>
+    <select class="select" id="arenaSelect">
+     <option value="0">CLASSIC ARENA</option>
+     <option value="1">DESERT ARENA</option>
+     <option value="2">NIGHT ARENA</option>
+     <option value="3">FOREST ARENA</option>
+    </select>
+   </div>
+  </div>
+ </div>
+
+ <div class="section">
+  <div class="sectionTitle">GAME SETTINGS</div>
+  <div class="grid2">
+   <div class="tile">
+    <b>🌦 WEATHER</b>
+    <small>আবহাওয়া বেছে নাও</small>
+    <select class="select" id="weatherSelect">
+     <option value="clear">Clear Day</option>
+     <option value="rain">Rainy Weather</option>
+     <option value="night">Night Mode</option>
+    </select>
+   </div>
+   <div class="tile">
+    <b>🎥 CAMERA VIEW</b>
+    <small>ক্যামেরার অবস্থান বেছে নাও</small>
+    <select class="select" id="cameraSelect">
+     <option value="behind">Behind View</option>
+     <option value="top">Top View</option>
+    </select>
+   </div>
+  </div>
+  <div class="grid2" style="margin-top:9px">
+   <div class="tile">
+    <b>🔊 BACKGROUND MUSIC</b>
+    <small>গেমের গান চালু বা বন্ধ করো</small>
+    <button class="menuButton" id="musicToggle" style="width:100%;margin-top:10px">MUSIC: ON</button>
+   </div>
+   <div class="tile">
+    <b>🔉 EFFECT SOUNDS</b>
+    <small>চলাফেরা ও ফাইটিং সাউন্ড</small>
+    <button class="menuButton" id="soundToggle" style="width:100%;margin-top:10px">SOUND: ON</button>
+   </div>
+  </div>
+ </div>
+
+ <div class="section">
+  <div class="sectionTitle">THE STORY</div>
+  <div class="story">
+   <strong>হাবিব গাভী কিংকং-এর গল্প</strong><br>
+   হাবিব  গাভী  কিংকং  তার  জন্ম বুড়ি গঙ্গার  পার  থেকে। <br>
+   তার বাবা লেদার শুটকি আর সামসু ভাই  তাকে একটি ছোট বাচ্চা দেখে তার বাসায়  নিয়ে  আসে ।<br>
+   কিন্তু আজ 14 বছর পর তার বাবার খেয়াল করলেন তার ছেলেটি একটি তৃতীয় লিঙ্গ, বলতে গেলে   মাইগা  হিজলা।<br>
+    এটা দেখে তার মা tiktoker  আখি আপা  সাথে সাথে শাড়ি পড়ে প্যাড খুলে টিকটক করতে থাকেন😂  !
+  </div>
+ </div>
+
+ <div class="footer">
+  HABIB GAVI KING KONG 3D • MOBILE GAME<br>
+  Developer: M.M.M.Meherab
+ </div>
+</div>
+
+<div class="modal" id="devModal">
+ <div class="modalCard">
+  <h2>DEVELOPER INFORMATION</h2>
+  <div class="devLine">DEVELOPER NAME<br><strong>M.M.M.Meherab</strong></div>
+  <div class="devLine">CLASS<br><strong>7th</strong></div>
+  <div class="devLine">APP RELEASE DATE<br><strong>29/10/2026</strong></div>
+  <div class="devLine">GAME<br><strong>Habib Gavi King Kong 3D</strong></div>
+  <button class="closeBtn" id="closeDev">CLOSE</button>
+ </div>
+</div>
+
+<div id="hud">
+ <div class="panel">
+  <span id="playerName">KING KONG</span>
+  <div class="bar"><div id="playerFill" class="fill"></div></div>
+  <span id="playerHP">HP 100</span>
+ </div>
+ <div class="panel" id="hudCenter">
+  ROUND <b id="round">১</b><br>
+  ENEMIES <b id="remaining">১</b>
+ </div>
+ <div class="panel">
+  <span>OPPONENT</span>
+  <div class="bar"><div id="enemyFill" class="fill"></div></div>
+  <span id="enemyHP">HP 100</span>
+ </div>
+</div>
+
+<div id="message"></div>
+
+<div id="gameButtons">
+ <button class="mini" id="weatherGame">🌦 WEATHER</button>
+ <button class="mini" id="cameraGame">🎥 CAMERA</button>
+ <button class="mini" id="pauseGame">⏸ PAUSE</button>
+</div>
+
+<div id="controls">
+ <div class="group move">
+  <button class="ctrl" data-act="left">◀ LEFT</button>
+  <button class="ctrl" data-act="right">RIGHT ▶</button>
+  <button class="ctrl" data-act="forward">▲ MOVE</button>
+  <button class="ctrl" data-act="back">▼ BACK</button>
+ </div>
+ <div class="group fight">
+  <button class="ctrl" data-act="punch">👊 PUNCH</button>
+  <button class="ctrl" data-act="kick">🦵 KICK</button>
+  <button class="ctrl" data-act="block">🛡 BLOCK</button>
+  <button class="ctrl" data-act="dodge">↗ DODGE</button>
+ </div>
+</div>
+
+<button id="exitGame">✕ EXIT ARENA</button>
+
+<div id="gameOverPanel">
+ <div class="gameOverCard">
+  <div style="font-size:43px">🥊</div>
+  <h1>GAME OVER</h1>
+  <div style="height:3px;background:#ffd36a;border-radius:5px"></div>
+  <p class="gameOverText">এই কিংকং, মাইগ্যা, গাভী, তৃতীয় লিঙ্গ মানুষ। তোর যোগ্যতা নাই এই fight জিতার। কারণ তুই tiktoker আখি আপা এর ক্যামেরাম্যান😂। এবং তোর মিনি পুটকুনি বাপের চেলা।</p>
+  <button class="actionButton" id="retryGame">🔄 TRY AGAIN</button>
+  <button class="actionButton" id="gameOverMenu">🏠 MAIN MENU</button>
+ </div>
+</div>
+
+<!-- এই তিনটি অডিও ফাইল index.html-এর একই ফোল্ডারে রাখবে -->
+<audio id="bgMusic" src="./music.mp3" loop preload="auto"></audio>
+<audio id="moveVoice" src="./move.mp3" preload="auto"></audio>
+<audio id="backVoice" src="./back.mp3" preload="auto"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+(()=>{
+'use strict';
+
+const $=id=>document.getElementById(id);
+const host=$('game');
+const music=$('bgMusic');
+const moveVoice=$('moveVoice');
+const backVoice=$('backVoice');
+
+const names=[
+ 'KING KONG','MAIGGA','GAVI',
+ 'লেদা শুটকি শামসুর ভাই','টিকটক আখি আপা'
+];
+const shirtColors=[0x246fca,0xb8323c,0x25854b,0x24272e,0xd18bcb];
+const pantsColors=[0x26313f,0x34313a,0x202d27,0x111318,0x40303e];
+
+let playing=false,gameOver=false,paused=false,transitioning=false;
+let round=1,last=0,messageTime=0;
+let enemies=[],weather='clear',cameraMode='behind',arena=0;
+let rain=null,rainVelocity=null;
+let musicEnabled=true,soundEnabled=true,audioUnlocked=false;
+let audioStatus={music:false,move:false,back:false};
+let playerCharacter=0;
+let scene,camera,renderer,sun;
+let player=null;
+let crowd=null;
+let arenaFloor=null;
+let floorMat=null;
+let arenaDecor=[];
+let lastMusicAttempt=0;
+
+function say(text,seconds=2){
+ $('message').textContent=text;
+ messageTime=seconds;
+}
+function bn(n){
+ return String(n).replace(/[0-9]/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
+}
+
+/* AUDIO */
+function checkAudioFile(audio,key){
+ audio.addEventListener('canplay',()=>audioStatus[key]=true);
+ audio.addEventListener('error',()=>{
+  audioStatus[key]=false;
+  console.warn('Audio file error:',audio.src,audio.error);
+ });
+}
+checkAudioFile(music,'music');
+checkAudioFile(moveVoice,'move');
+checkAudioFile(backVoice,'back');
+
+function unlockAudio(){
+ audioUnlocked=true;
+ [music,moveVoice,backVoice].forEach(a=>{
+  try{a.load()}catch(e){}
+ });
+}
+
+function playAudio(audio,reset=false){
+ if(!audio||!soundEnabled&&audio!==music)return;
+ if(audio===music&&!musicEnabled)return;
+
+ try{
+  if(reset)audio.currentTime=0;
+  const p=audio.play();
+  if(p&&p.catch)p.catch(err=>{
+   console.warn('Audio playback blocked or unavailable:',audio.src,err);
+  });
+ }catch(e){console.warn(e)}
+}
+
+function stopAudio(audio){
+ if(!audio)return;
+ try{audio.pause();audio.currentTime=0}catch(e){}
+}
+function stopVoices(){
+ stopAudio(moveVoice);
+ stopAudio(backVoice);
+}
+function playVoice(audio,other){
+ if(!soundEnabled)return;
+ stopAudio(other);
+ playAudio(audio,true);
+}
+function startMusic(){
+ if(!musicEnabled)return;
+ music.loop=true;
+ music.volume=.48;
+ playAudio(music,false);
+}
+
+$('musicToggle').onclick=()=>{
+ unlockAudio();
+ musicEnabled=!musicEnabled;
+ $('musicToggle').textContent='MUSIC: '+(musicEnabled?'ON':'OFF');
+ if(musicEnabled)startMusic();else stopAudio(music);
+};
+$('soundToggle').onclick=()=>{
+ unlockAudio();
+ soundEnabled=!soundEnabled;
+ $('soundToggle').textContent='SOUND: '+(soundEnabled?'ON':'OFF');
+ if(!soundEnabled)stopVoices();
+};
+
+/* DEVELOPER */
+$('openDev').onclick=()=>$('devModal').style.display='flex';
+$('closeDev').onclick=()=>$('devModal').style.display='none';
+$('devModal').onclick=e=>{
+ if(e.target===$('devModal'))$('devModal').style.display='none';
+};
+
+if(!window.THREE){
+ $('enterArena').disabled=true;
+ $('enterArena').textContent='INTERNET CONNECTION REQUIRED';
+ say('Three.js লোড করতে ইন্টারনেট চালু করো।',10);
+ return;
+}
+
+/* THREE.JS */
+scene=new THREE.Scene();
+scene.background=new THREE.Color(0x8494a5);
+scene.fog=new THREE.Fog(0x8494a5,38,85);
+
+camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,140);
+camera.position.set(0,5,12);
+
+renderer=new THREE.WebGLRenderer({
+ antialias:false,powerPreference:'high-performance'
+});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.15));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+host.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xe2edff,0x373c45,1.65));
+
+sun=new THREE.DirectionalLight(0xffe5bf,1.9);
+sun.position.set(-9,17,9);
+scene.add(sun);
+
+function mat(color,roughness=.78){
+ return new THREE.MeshStandardMaterial({color,roughness});
+}
+function mesh(parent,geo,material,x=0,y=0,z=0){
+ const o=new THREE.Mesh(geo,material);
+ o.position.set(x,y,z);
+ parent.add(o);
+ return o;
+}
+function box(parent,w,h,d,m,x=0,y=0,z=0){
+ return mesh(parent,new THREE.BoxGeometry(w,h,d),m,x,y,z);
+}
+function sphere(parent,r,m,x,y,z,sx=1,sy=1,sz=1){
+ const o=mesh(parent,new THREE.SphereGeometry(r,12,10),m,x,y,z);
+ o.scale.set(sx,sy,sz);
+ return o;
+}
+function segment(parent,r,len,m){
+ const g=new THREE.Group();
+ parent.add(g);
+ mesh(g,new THREE.CylinderGeometry(r*.86,r,len,9),m,0,-len/2,0);
+ sphere(g,r,m,0,-len,0);
+ return g;
+}
+
+/* MATERIALS */
+const skinMat=mat(0xc99570,.65);
+const pantsMat=mat(0x252b35);
+const shoeMat=mat(0x111419);
+const eyeMat=mat(0x181818);
+const railMat=mat(0xb2bbc4,.5);
+
+/* ARENA */
+function clearDecor(){
+ arenaDecor.forEach(o=>{
+  scene.remove(o);
+  o.traverse?.(n=>{
+   if(n.geometry)n.geometry.dispose();
+  });
+ });
+ arenaDecor=[];
+}
+
+function addDecor(o){
+ scene.add(o);
+ arenaDecor.push(o);
+ return o;
+}
+
+function createArena(){
+ clearDecor();
+
+ if(arenaFloor){
+  scene.remove(arenaFloor);
+  arenaFloor.geometry.dispose();
+ }
+ const colors=[
+  0x747b83,0xb49b72,0x45475e,0x496849
+ ];
+ floorMat=mat(colors[arena]);
+ arenaFloor=mesh(scene,new THREE.CircleGeometry(18,48),floorMat,0,-.08,0);
+ arenaFloor.rotation.x=-Math.PI/2;
+
+ const ringMat=mat(arena===2?0x8c8ff0:0xc3c8ce);
+ for(let r=4;r<=16;r+=2){
+  const ring=mesh(scene,new THREE.RingGeometry(r-.025,r+.025,48),
+   mat(r%4===0?0xc3c8ce:0x515963),0,.015,0);
+  ring.rotation.x=-Math.PI/2;
+  addDecor(ring);
+ }
+
+ for(let i=0;i<32;i++){
+  const a=i/32*Math.PI*2;
+  const post=mesh(scene,new THREE.CylinderGeometry(.09,.11,1.3,7),
+   railMat,Math.cos(a)*18,.65,Math.sin(a)*18);
+  addDecor(post);
+ }
+ for(const y of [.3,.72,1.15]){
+  const rail=mesh(scene,new THREE.TorusGeometry(18,.05,5,48),railMat,0,y,0);
+  rail.rotation.x=Math.PI/2;
+  addDecor(rail);
+ }
+
+ if(arena===1){
+  const sand=mat(0xd1b17b);
+  for(let i=0;i<12;i++){
+   const x=(Math.random()-.5)*42;
+   const z=(Math.random()-.5)*42;
+   if(Math.hypot(x,z)<19)continue;
+   const rock=mesh(scene,new THREE.DodecahedronGeometry(.5+Math.random(),0),
+    sand,x,.25,z);
+   rock.scale.y=.65;
+   addDecor(rock);
+  }
+ }
+ if(arena===3){
+  const green=mat(0x254c2e);
+  for(let i=0;i<24;i++){
+   const a=i/24*Math.PI*2;
+   const r=21+Math.random()*4;
+   const tree=new THREE.Group();
+   tree.position.set(Math.cos(a)*r,0,Math.sin(a)*r);
+   mesh(tree,new THREE.CylinderGeometry(.15,.22,1.4,6),
+    mat(0x55412b),0,.7,0);
+   sphere(tree,.85,green,0,1.6,0,1,1.25,1);
+   addDecor(tree);
+  }
+ }
+
+ if(arena===2){
+  const lampMat=mat(0x9aabff,.3);
+  for(let i=0;i<8;i++){
+   const a=i/8*Math.PI*2;
+   const lamp=mesh(scene,new THREE.SphereGeometry(.22,8,6),
+    lampMat,Math.cos(a)*20,3,Math.sin(a)*20);
+   addDecor(lamp);
+  }
+ }
+
+ /* দর্শক: কম পলিগন, মোবাইলে তুলনামূলক হালকা */
+ const crowdMats=[
+  mat(0x345b88),mat(0x9b4545),mat(0xd3a85e),
+  mat(0x497354),mat(0xd0d0d0),mat(0x654e83)
+ ];
+ crowd=new THREE.Group();
+ scene.add(crowd);
+ for(let row=0;row<3;row++){
+  const radius=19.2+row*.95;
+  const count=32+row*8;
+  for(let i=0;i<count;i++){
+   const a=i/count*Math.PI*2;
+   const p=new THREE.Group();
+   p.position.set(Math.cos(a)*radius,.35+row*.25,Math.sin(a)*radius);
+   p.rotation.y=-a+Math.PI/2;
+   sphere(p,.11,skinMat,0,.37,0,.8,1,.8);
+   box(p,.22,.28,.14,crowdMats[(i+row)%crowdMats.length],0,.13,0);
+   crowd.add(p);
+  }
+ }
+}
+
+function setArena(value,announce=true){
+ arena=Number(value)||0;
+ createArena();
+ if(announce)say(['CLASSIC ARENA','DESERT ARENA','NIGHT ARENA','FOREST ARENA'][arena],1.5);
+ if(weather==='clear')setWeather('clear',false);
+}
+$('arenaSelect').onchange=e=>setArena(e.target.value);
+
+/* WEATHER */
+function setWeather(value,announce=true){
+ weather=value;
+
+ if(rain){
+  scene.remove(rain);
+  rain.geometry.dispose();
+  rain.material.dispose();
+  rain=null;
+  rainVelocity=null;
+ }
+ if(value==='clear'){
+  const bg=arena===2?0x515a70:arena===1?0xc8a775:arena===3?0x536e5b:0x8494a5;
+  scene.background.set(bg);
+  scene.fog.color.set(bg);
+  scene.fog.near=38;scene.fog.far=85;
+  sun.intensity=1.9;
+ }else if(value==='night'){
+  scene.background.set(0x10182d);
+  scene.fog.color.set(0x10182d);
+  scene.fog.near=25;scene.fog.far=70;
+  sun.intensity=.45;
+ }else{
+  scene.background.set(0x53616d);
+  scene.fog.color.set(0x53616d);
+  scene.fog.near=22;scene.fog.far=65;
+  sun.intensity=.8;
+
+  const count=250;
+  const positions=new Float32Array(count*3);
+  rainVelocity=new Float32Array(count);
+  for(let i=0;i<count;i++){
+   positions[i*3]=(Math.random()-.5)*35;
+   positions[i*3+1]=Math.random()*18;
+   positions[i*3+2]=(Math.random()-.5)*35;
+   rainVelocity[i]=8+Math.random()*8;
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(positions,3));
+  rain=new THREE.Points(geo,new THREE.PointsMaterial({
+   color:0xcfe5ff,size:.06,transparent:true,opacity:.7
+  }));
+  scene.add(rain);
+ }
+ $('weatherSelect').value=value;
+ if(announce)say(value==='rain'?'RAINY WEATHER':value==='night'?'NIGHT MODE':'CLEAR DAY',1.2);
+}
+$('weatherSelect').onchange=e=>setWeather(e.target.value);
+$('weatherGame').onclick=()=>{
+ const a=['clear','rain','night'];
+ setWeather(a[(a.indexOf(weather)+1)%a.length]);
+};
+
+/* CAMERA */
+function setCameraMode(value,announce=true){
+ cameraMode=value;
+ $('cameraSelect').value=value;
+ if(announce)say(value==='top'?'TOP VIEW':'BEHIND VIEW',1.2);
+}
+$('cameraSelect').onchange=e=>setCameraMode(e.target.value);
+$('cameraGame').onclick=()=>setCameraMode(cameraMode==='behind'?'top':'behind');
+
+/* FIGHTERS */
+function createFighter(isPlayer,characterIndex=0){
+ const root=new THREE.Group();
+ const body=new THREE.Group();
+ root.add(body);
+ scene.add(root);
+
+ const index=characterIndex%5;
+ const shirt=mat(shirtColors[index],.7);
+ const pants=mat(pantsColors[index],.8);
+ const shoe=shoeMat;
+ const limbs={};
+
+ /* কোমর, বুক, গলা ও মাথা */
+ sphere(body,.34,shirt,0,1.38,0,1.05,1.18,.72);
+ box(body,.51,.22,.36,pants,0,1.02,0);
+ mesh(body,new THREE.CylinderGeometry(.32,.30,.18,10),shirt,0,1.08,0);
+ mesh(body,new THREE.CylinderGeometry(.105,.12,.17,8),skinMat,0,1.94,0);
+ sphere(body,.235,skinMat,0,2.18,0,.9,1.06,.9);
+
+ /* কান ও চোখ */
+ sphere(body,.05,skinMat,-.225,2.17,0);
+ sphere(body,.05,skinMat,.225,2.17,0);
+ sphere(body,.032,eyeMat,-.085,2.22,.2);
+ sphere(body,.032,eyeMat,.085,2.22,.2);
+
+ /* চুল */
+ sphere(body,.238,mat(index===4?0x25172a:0x29221d),
+  0,2.32,-.015,.97,.45,.93);
+
+ /* বাহু, কনুই, হাত */
+ for(const side of ['L','R']){
+  const s=side==='L'?-1:1;
+
+  const shoulder=new THREE.Group();
+  shoulder.position.set(s*.40,1.64,0);
+  body.add(shoulder);
+  sphere(shoulder,.135,shirt,0,0,0);
+
+  segment(shoulder,.105,.31,shirt);
+
+  const elbow=new THREE.Group();
+  elbow.position.y=-.30;
+  shoulder.add(elbow);
+  sphere(elbow,.08,skinMat,0,0,0);
+  segment(elbow,.075,.30,skinMat);
+  sphere(elbow,.09,skinMat,0,-.31,.015);
+
+  limbs['shoulder'+side]=shoulder;
+  limbs['elbow'+side]=elbow;
+
+  const hip=new THREE.Group();
+  hip.position.set(s*.17,1.00,0);
+  body.add(hip);
+  segment(hip,.145,.36,pants);
+
+  const knee=new THREE.Group();
+  knee.position.y=-.36;
+  hip.add(knee);
+  sphere(knee,.105,pants,0,0,0);
+  segment(knee,.095,.35,pants);
+  box(knee,.19,.12,.29,shoe,0,-.36,.075);
+
+  limbs['hip'+side]=hip;
+  limbs['knee'+side]=knee;
+ }
+
+ return {
+  root,body,limbs,isPlayer,index,
+  hp:100,action:'idle',actionTime:0,cooldown:0,
+  dead:false,blocking:false,phase:Math.random()*6,
+  shirt,pants
+ };
+}
+
+playerCharacter=Number($('characterSelect').value);
+player=createFighter(true,playerCharacter);
+player.root.position.set(0,0,5);
+player.root.rotation.y=Math.PI;
+
+$('characterSelect').onchange=e=>{
+ playerCharacter=Number(e.target.value);
+ $('playerName').textContent=names[playerCharacter];
+ if(player){
+  const oldPos=player.root.position.clone();
+  const oldRot=player.root.rotation.y;
+  disposeFighter(player);
+  player=createFighter(true,playerCharacter);
+  player.root.position.copy(oldPos);
+  player.root.rotation.y=oldRot;
+ }
+};
+
+function disposeFighter(f){
+ if(!f)return;
+ scene.remove(f.root);
+ f.root.traverse(o=>{
+  if(o.geometry)o.geometry.dispose();
+  if(o.material&&o.material!==skinMat&&o.material!==eyeMat&&
+     o.material!==shoeMat&&o.material!==pantsMat){
+   if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());
+   else o.material.dispose();
+  }
+ });
+}
+
+function clamp(f){
+ const r=Math.hypot(f.root.position.x,f.root.position.z);
+ if(r>16){
+  f.root.position.x*=16/r;
+  f.root.position.z*=16/r;
+ }
+}
+function face(f,target){
+ f.root.rotation.y=Math.atan2(
+  target.root.position.x-f.root.position.x,
+  target.root.position.z-f.root.position.z
+ );
+}
+function nearestEnemy(){
+ let found=null,best=Infinity;
+ for(const e of enemies){
+  if(e.dead)continue;
+  const d=e.root.position.distanceTo(player.root.position);
+  if(d<best){best=d;found=e;}
+ }
+ return found;
+}
+
+function updateHUD(){
+ $('playerFill').style.width=Math.max(0,player.hp)+'%';
+ $('playerHP').textContent='HP '+Math.ceil(player.hp);
+
+ const e=nearestEnemy();
+ if(e){
+  $('enemyFill').style.width=Math.max(0,e.hp)+'%';
+  $('enemyHP').textContent='HP '+Math.ceil(e.hp);
+ }else{
+  $('enemyFill').style.width='0%';
+  $('enemyHP').textContent='CLEAR';
+ }
+ $('remaining').textContent=bn(enemies.filter(e=>!e.dead).length);
+ $('playerName').textContent=names[playerCharacter];
+}
+
+/* ROUND SYSTEM */
+function spawnRound(){
+ enemies.forEach(disposeFighter);
+ enemies=[];
+ transitioning=false;
+ gameOver=false;
+ paused=false;
+ playing=true;
+
+ player.hp=100;
+ player.blocking=false;
+ player.action='idle';
+ player.actionTime=0;
+ player.cooldown=0;
+ player.root.position.set(0,0,5);
+ player.root.rotation.y=Math.PI;
+
+ for(let i=0;i<round;i++){
+  const e=createFighter(false,(i+round)%5);
+  const a=i/round*Math.PI*2;
+  const radius=round===1?4.3:Math.min(6+round*.25,12);
+  e.root.position.set(Math.cos(a)*radius,0,Math.sin(a)*radius-1);
+  face(e,player);
+  enemies.push(e);
+ }
+
+ $('round').textContent=bn(round);
+ updateHUD();
+ say(bn(round)+' জন  কিংকং  এসেছে!',2);
+}
+
+function finishGame(){
+ if(gameOver)return;
+ player.hp=0;
+ gameOver=true;
+ playing=false;
+ paused=false;
+ transitioning=false;
+ player.blocking=false;
+
+ $('gameOverPanel').style.display='flex';
+ $('playerFill').style.width='0%';
+ $('playerHP').textContent='HP 0';
+ stopVoices();
+ stopAudio(music);
+}
+
+function doAction(action){
+ if(!playing||gameOver||paused||transitioning)return;
+
+ if(action==='forward'||action==='back'){
+  const a=player.root.rotation.y;
+  const amount=action==='forward'?.65:-.48;
+  player.root.position.x+=Math.sin(a)*amount;
+  player.root.position.z+=Math.cos(a)*amount;
+  clamp(player);
+  player.action='walk';
+  player.actionTime=.2;
+  playVoice(action==='forward'?moveVoice:backVoice,
+             action==='forward'?backVoice:moveVoice);
+  return;
+ }
+
+ if(action==='left'||action==='right'){
+  player.root.rotation.y+=(action==='left'?.23:-.23);
+  player.action='walk';
+  player.actionTime=.18;
+  return;
+ }
+
+ if(action==='block'){
+  player.blocking=true;
+  player.action='block';
+  player.actionTime=.5;
+  return;
+ }
+
+ if(action==='dodge'){
+  player.action='dodge';
+  player.actionTime=.35;
+  const a=player.root.rotation.y;
+  player.root.position.x-=Math.sin(a)*1.0;
+  player.root.position.z-=Math.cos(a)*1.0;
+  clamp(player);
+  return;
+ }
+
+ if(action==='punch'||action==='kick'){
+  if(player.cooldown>0)return;
+  player.cooldown=.48;
+  player.action=action;
+  player.actionTime=.4;
+
+  const e=nearestEnemy();
+  if(!e)return;
+
+  if(e.root.position.distanceTo(player.root.position)>3.15){
+   say(' আরো কিংকং এর কাছে যাও !',.8);
+   return;
+  }
+
+  const to=e.root.position.clone().sub(player.root.position).normalize();
+  const a=player.root.rotation.y;
+  const forward=new THREE.Vector3(Math.sin(a),0,Math.cos(a));
+
+  if(forward.dot(to)<.15){
+   say('প্রতিপক্ষের দিকে ঘুরে দাঁড়াও!',.8);
+   return;
+  }
+
+  e.hp-=action==='kick'?27:19;
+  e.action='hurt';
+  e.actionTime=.28;
+
+  const away=e.root.position.clone().sub(player.root.position);
+  away.y=0;
+  if(away.lengthSq()>0){
+   e.root.position.addScaledVector(away.normalize(),.45);
+  }
+
+  if(e.hp<=0){
+   e.hp=0;
+   e.dead=true;
+   e.action='fall';
+   e.actionTime=.85;
+  }
+ }
+}
+
+/* ENEMY AI */
+function enemyAI(e,dt){
+ if(e.dead)return;
+ e.cooldown=Math.max(0,e.cooldown-dt);
+ e.actionTime=Math.max(0,e.actionTime-dt);
+
+ const d=e.root.position.distanceTo(player.root.position);
+ face(e,player);
+
+ if(e.action==='hurt'&&e.actionTime>0)return;
+
+ if(d>1.7){
+  e.action='walk';
+  const dir=player.root.position.clone().sub(e.root.position);
+  dir.y=0;
+  dir.normalize();
+  e.root.position.addScaledVector(dir,dt*1.25);
+  clamp(e);
+ }else if(e.cooldown<=0){
+  e.action=Math.random()<.68?'punch':'kick';
+  e.actionTime=.45;
+  e.cooldown=1.15+Math.random()*.45;
+
+  if(!player.blocking&&player.action!=='dodge'){
+   player.hp-=e.action==='kick'?10:7;
+   if(player.hp<=0)finishGame();
+  }
+ }else{
+  e.action='idle';
+ }
+}
+
+/* SMOOTHER CHARACTER ANIMATION */
+function animateFighter(f,t,dt){
+ const l=f.limbs;
+ const walking=f.action==='walk';
+ const phase=t*7+f.phase;
+ const swing=walking?Math.sin(phase)*.46:0;
+
+ let punch=0,kick=0,guard=0,fall=0;
+ if(f.action==='punch')punch=Math.sin(Math.min(1,1-f.actionTime/.4)*Math.PI);
+ if(f.action==='kick')kick=Math.sin(Math.min(1,1-f.actionTime/.4)*Math.PI);
+ if(f.action==='block')guard=1;
+ if(f.action==='fall')fall=1-Math.max(0,f.actionTime);
+
+ l.shoulderL.rotation.x=swing-guard*.7;
+ l.shoulderR.rotation.x=-swing-guard*.7;
+ l.shoulderL.rotation.z=.12+guard*.45;
+ l.shoulderR.rotation.z=-.12-guard*.45;
+ l.elbowL.rotation.x=-.2-guard*.65;
+ l.elbowR.rotation.x=-.2-guard*.65;
+
+ if(f.action==='punch'){
+  l.shoulderR.rotation.x=-1.55*punch;
+  l.elbowR.rotation.x=-.75*punch;
+ }
+ if(f.action==='kick'){
+  l.hipR.rotation.x=-1.25*kick;
+  l.kneeR.rotation.x=1.05*kick;
+ }
+ l.hipL.rotation.x=swing;
+ l.hipR.rotation.x=-swing;
+ l.kneeL.rotation.x=Math.max(0,-swing)*.75;
+ l.kneeR.rotation.x=Math.max(0,swing)*.75;
+
+ f.body.position.y=walking?Math.abs(Math.sin(phase*2))*.045:0;
+ f.body.rotation.z=f.action==='dodge'?.18:0;
+ f.body.rotation.x=fall*1.2;
+
+ f.actionTime=Math.max(0,f.actionTime-dt);
+ if(f.actionTime<=0&&
+  ['punch','kick','block','dodge','hurt'].includes(f.action)){
+  f.action='idle';
+  f.blocking=false;
+ }
+}
+
+function checkRoundEnd(){
+ if(!playing||gameOver||transitioning)return;
+ if(enemies.length&&enemies.every(e=>e.dead)){
+  transitioning=true;
+  playing=false;
+  say(bn(round)+' জন কিংকং পরাজিত !',2);
+
+  setTimeout(()=>{
+   if(!gameOver&&!$('gameOverPanel').style.display.includes('flex')){
+    round++;
+    spawnRound();
+   }
+  },1900);
+ }
+}
+
+/* TOUCH */
+document.querySelectorAll('[data-act]').forEach(btn=>{
+ const action=btn.dataset.act;
+ btn.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  unlockAudio();
+  doAction(action);
+ });
+ const release=()=>{
+  if(action==='block'){
+   player.blocking=false;
+   if(player.action==='block')player.action='idle';
+  }
+ };
+ btn.addEventListener('pointerup',release);
+ btn.addEventListener('pointercancel',release);
+ btn.addEventListener('lostpointercapture',release);
+});
+
+/* KEYBOARD */
+addEventListener('keydown',e=>{
+ if(e.repeat)return;
+ const map={
+  ArrowLeft:'left',ArrowRight:'right',
+  ArrowUp:'forward',ArrowDown:'back',
+  a:'left',d:'right',w:'forward',s:'back',
+  j:'punch',k:'kick',l:'block',' ':'dodge'
+ };
+ if(map[e.key]){
+  e.preventDefault();
+  unlockAudio();
+  doAction(map[e.key]);
+ }
+});
+addEventListener('keyup',e=>{
+ if(e.key==='l'||e.key===' '){
+  player.blocking=false;
+  if(player.action==='block')player.action='idle';
+ }
+});
+
+/* PAUSE */
+$('pauseGame').onclick=()=>{
+ if(!playing||gameOver)return;
+ paused=!paused;
+ $('pauseGame').textContent=paused?'▶ RESUME':'⏸ PAUSE';
+ say(paused?'GAME PAUSED':'RESUMED',1.2);
+};
+
+/* START */
+$('enterArena').onclick=()=>{
+ unlockAudio();
+
+ playerCharacter=Number($('characterSelect').value);
+ setArena($('arenaSelect').value,false);
+ setWeather($('weatherSelect').value,false);
+ setCameraMode($('cameraSelect').value,false);
+
+ if(player.index!==playerCharacter){
+  disposeFighter(player);
+  player=createFighter(true,playerCharacter);
+ }
+
+ $('home').style.display='none';
+ $('gameOverPanel').style.display='none';
+ $('hud').style.display='flex';
+ $('controls').style.display='flex';
+ $('gameButtons').style.display='flex';
+ $('exitGame').style.display='block';
+
+ round=1;
+ spawnRound();
+ startMusic();
+};
+
+/* RETRY */
+$('retryGame').onclick=()=>{
+ unlockAudio();
+ $('gameOverPanel').style.display='none';
+ stopVoices();
+
+ round=1;
+ spawnRound();
+ startMusic();
+ $('pauseGame').textContent='⏸ PAUSE';
+};
+
+/* MAIN MENU */
+$('gameOverMenu').onclick=()=>{
+ $('gameOverPanel').style.display='none';
+ returnHome();
+};
+
+function returnHome(){
+ playing=false;
+ transitioning=false;
+ paused=false;
+ gameOver=false;
+
+ $('home').style.display='block';
+ $('hud').style.display='none';
+ $('controls').style.display='none';
+ $('gameButtons').style.display='none';
+ $('exitGame').style.display='none';
+ $('message').textContent='';
+ $('pauseGame').textContent='⏸ PAUSE';
+
+ stopAudio(music);
+ stopVoices();
+}
+
+$('exitGame').onclick=returnHome;
+
+/* RENDER LOOP */
+function animate(now){
+ requestAnimationFrame(animate);
+
+ const dt=Math.min(.035,Math.max(.001,(now-last)/1000||.016));
+ last=now;
+ const t=now/1000;
+
+ if(playing&&!paused&&!gameOver){
+  player.cooldown=Math.max(0,player.cooldown-dt);
+
+  for(let i=0;i<enemies.length;i++){
+   if(!gameOver)enemyAI(enemies[i],dt);
+  }
+
+  animateFighter(player,t,dt);
+  for(let i=0;i<enemies.length;i++)animateFighter(enemies[i],t,dt);
+
+  checkRoundEnd();
+  updateHUD();
+
+  const target=nearestEnemy();
+  const focus=player.root.position.clone();
+  if(target)focus.lerp(target.root.position,.2);
+
+  let desired;
+  if(cameraMode==='top'){
+   desired=new THREE.Vector3(focus.x,17,focus.z+.1);
+  }else{
+   const a=player.root.rotation.y;
+   desired=new THREE.Vector3(
+    player.root.position.x-Math.sin(a)*6,
+    4.1,
+    player.root.position.z-Math.cos(a)*6
+   );
+  }
+
+  camera.position.lerp(desired,Math.min(1,dt*3));
+  camera.lookAt(focus.x,cameraMode==='top'?0:1.1,focus.z);
+ }else if(!paused){
+  animateFighter(player,t,dt);
+  for(let i=0;i<enemies.length;i++)animateFighter(enemies[i],t,dt);
+ }
+
+ if(rain&&rainVelocity&&!paused){
+  const arr=rain.geometry.attributes.position.array;
+  for(let i=0;i<rainVelocity.length;i++){
+   arr[i*3+1]-=rainVelocity[i]*dt;
+   if(arr[i*3+1]<0){
+    arr[i*3+1]=16+Math.random()*4;
+    arr[i*3]=(Math.random()-.5)*35;
+    arr[i*3+2]=(Math.random()-.5)*35;
+   }
+  }
+  rain.geometry.attributes.position.needsUpdate=true;
+ }
+
+ if(messageTime>0&&!paused){
+  messageTime-=dt;
+  if(messageTime<=0)$('message').textContent='';
+ }
+
+ renderer.render(scene,camera);
+}
+
+addEventListener('resize',()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.15));
+});
+
+setArena(0,false);
+setWeather('clear',false);
+updateHUD();
+requestAnimationFrame(animate);
+
+})();
+</script>
+</body>
+</html>
